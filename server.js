@@ -39,6 +39,7 @@ app.use('/api/products', require('./routes/products'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/cash-register', require('./routes/cashRegister'));
 app.use('/api/accounting', require('./routes/accounting'));
+app.use('/api/inventory', require('./routes/inventoryRoutes'));
 
 app.get('/', (req, res) => {
   if (req.session.user) {

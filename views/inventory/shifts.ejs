@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Turnos - <%= restaurantName %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <%- include('../layouts/main', { body: `
+    <div class="container">
+        <div class="page-header">
+            <h1>Gestión de Turnos</h1>
+            <form action="/api/inventory/shifts/start" method="POST">
+                <button type="submit" class="btn btn-primary" <%= openShift ? 'disabled' : '' %>>
+                    + Iniciar Nuevo Turno
+                </button>
+            </form>
+        </div>
+
+        <% if (openShift) { %>
+            <div class="alert alert-info">
+                Hay un turno abierto, iniciado por <strong><%= openShift.openedBy.name %></strong> el
+                <%= new Date(openShift.openingTime).toLocaleString('es-CL') %>.
+                Para iniciar un nuevo turno, primero debe cerrar el actual.
+            </div>
+        <% } %>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID Turno</th>
+                        <th>Abierto por</th>
+                        <th>Hora Apertura</th>
+                        <th>Cerrado por</th>
+                        <th>Hora Cierre</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (shifts && shifts.length > 0) { %>
+                        <% shifts.forEach(shift => { %>
+                            <tr>
+                                <td><%= shift.shiftId %></td>
+                                <td><%= shift.openedBy.name %></td>
+                                <td><%= new Date(shift.openingTime).toLocaleString('es-CL') %></td>
+                                <td><%= shift.closedBy ? shift.closedBy.name : 'N/A' %></td>
+                                <td><%= shift.closingTime ? new Date(shift.closingTime).toLocaleString('es-CL') : 'N/A' %></td>
+                                <td>
+                                    <span class="status <%= shift.status === 'open' ? 'status-active' : 'status-inactive' %>">
+                                        <%= shift.status === 'open' ? 'Abierto' : 'Cerrado' %>
+                                    </span>
+                                </td>
+                                <td class="actions">
+                                    <% if (shift.status === 'open') { %>
+                                        <form action="/api/inventory/shifts/<%= shift._id %>/close" method="POST" onsubmit="return confirm('¿Está seguro de que desea cerrar este turno?');">
+                                            <button type="submit" class="btn btn-sm btn-warning">Cerrar Turno</button>
+                                        </form>
+                                    <% } else { %>
+                                        <button class="btn btn-sm btn-secondary" disabled>Ver Detalles</button>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="7" class="text-center">No hay turnos registrados.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    ` }) %>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - <%= restaurantName %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <%- include('../layouts/main', { body: `
+    <div class="container">
+        <div class="page-header">
+            <h1>${title}</h1>
+        </div>
+
+        <div class="form-container">
+            <%
+            const isEditing = Object.keys(warehouse).length > 0;
+            const actionUrl = isEditing ? '/api/inventory/warehouses/' + warehouse._id : '/api/inventory/warehouses';
+            %>
+            <form action="<%= actionUrl %>" method="POST">
+                <div class="form-group">
+                    <label for="name">Nombre de la Bodega *</label>
+                    <input type="text" id="name" name="name" class="form-control" value="<%= warehouse.name || '' %>" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Descripción</label>
+                    <textarea id="description" name="description" rows="3" class="form-control"><%= warehouse.description || '' %></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="isDefault">Bodega por Defecto</label>
+                    <select id="isDefault" name="isDefault" class="form-control">
+                        <option value="false" <%= (warehouse.isDefault === false ? 'selected' : '') %>>No</option>
+                        <option value="true" <%= (warehouse.isDefault === true ? 'selected' : '') %>>Sí</option>
+                    </select>
+                    <small class="text-muted">La bodega por defecto se usará para la migración inicial de stock.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="active">Estado</label>
+                    <select id="active" name="active" class="form-control">
+                        <option value="true" <%= (warehouse.active === true ? 'selected' : '') %>>Activa</option>
+                        <option value="false" <%= (warehouse.active === false ? 'selected' : '') %>>Inactiva</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <a href="/api/inventory/warehouses" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    ` }) %>
+</body>
+</html>

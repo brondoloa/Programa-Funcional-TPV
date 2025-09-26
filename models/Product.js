@@ -45,12 +45,6 @@ const productSchema = new mongoose.Schema({
     required: [true, 'El costo es requerido'],
     min: 0
   },
-  stock: {
-    type: Number,
-    required: true,
-    default: 0,
-    min: 0
-  },
   minStock: {
     type: Number,
     default: 5,
@@ -94,34 +88,64 @@ productSchema.virtual('profitMargin').get(function() {
   return ((this.price - this.cost) / this.price * 100).toFixed(2);
 });
 
-// Método para verificar stock bajo
-productSchema.methods.isLowStock = function() {
-  return this.stock <= this.minStock;
+// Virtual para stock (representa el stock en la cocina, que es el relevante para ventas)
+productSchema.virtual('stock').get(function() {
+  // Nota: Este es un placeholder. El stock real es asíncrono.
+  // Se recomienda usar el método getStockForSale() en las rutas.
+  return 0;
+});
+
+// Método para obtener el stock de una bodega específica (ej. Cocina)
+productSchema.methods.getStockForSale = async function() {
+  // Asumimos que la bodega de venta se llama 'Cocina'. Esto debería ser configurable.
+  const saleWarehouse = await mongoose.model('Warehouse').findOne({ name: 'Cocina' });
+  if (!saleWarehouse) return 0;
+
+  const inventory = await mongoose.model('Inventory').findOne({
+    product: this._id,
+    warehouse: saleWarehouse._id
+  });
+
+  return inventory ? inventory.quantity : 0;
 };
 
-// Método para verificar disponibilidad de combo
+// Método para verificar disponibilidad de combo, basado en el stock de 'Cocina'
 productSchema.methods.isComboAvailable = async function() {
-  if (!this.isCombo) return this.stock > 0;
+  // Asumimos que la bodega de venta se llama 'Cocina'.
+  const saleWarehouse = await mongoose.model('Warehouse').findOne({ name: 'Cocina' });
+  if (!saleWarehouse) return false; // Si no hay bodega 'Cocina', no se puede vender
+
+  if (!this.isCombo) {
+    const inventory = await mongoose.model('Inventory').findOne({ product: this._id, warehouse: saleWarehouse._id });
+    return inventory && inventory.quantity > 0;
+  }
   
   for (const item of this.comboItems) {
-    const product = await mongoose.model('Product').findById(item.product);
-    if (!product || product.stock < item.quantity) {
+    const inventoryItem = await mongoose.model('Inventory').findOne({ product: item.product, warehouse: saleWarehouse._id });
+    if (!inventoryItem || inventoryItem.quantity < item.quantity) {
       return false;
     }
   }
   return true;
 };
 
-// Método para obtener stock disponible del combo
+// Método para obtener stock disponible del combo, basado en el stock de 'Cocina'
 productSchema.methods.getComboAvailableStock = async function() {
-  if (!this.isCombo) return this.stock;
+  // Asumimos que la bodega de venta se llama 'Cocina'.
+  const saleWarehouse = await mongoose.model('Warehouse').findOne({ name: 'Cocina' });
+  if (!saleWarehouse) return 0;
+
+  if (!this.isCombo) {
+    const inventory = await mongoose.model('Inventory').findOne({ product: this._id, warehouse: saleWarehouse._id });
+    return inventory ? inventory.quantity : 0;
+  }
   
   let minAvailable = Infinity;
   
   for (const item of this.comboItems) {
-    const product = await mongoose.model('Product').findById(item.product);
-    if (!product) return 0;
-    const availableForThisItem = Math.floor(product.stock / item.quantity);
+    const inventoryItem = await mongoose.model('Inventory').findOne({ product: item.product, warehouse: saleWarehouse._id });
+    const stock = inventoryItem ? inventoryItem.quantity : 0;
+    const availableForThisItem = Math.floor(stock / item.quantity);
     minAvailable = Math.min(minAvailable, availableForThisItem);
   }
   

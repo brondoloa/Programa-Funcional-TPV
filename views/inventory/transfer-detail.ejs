@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Transferencia - <%= restaurantName %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <%- include('../layouts/main', { body: `
+    <div class="container">
+        <div class="page-header">
+            <h1>Detalle de Transferencia: <%= transfer.transferId %></h1>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="transfer-details">
+                    <p><strong>Desde:</strong> <%= transfer.fromWarehouse.name %></p>
+                    <p><strong>Hacia:</strong> <%= transfer.toWarehouse.name %></p>
+                    <p><strong>Solicitado por:</strong> <%= transfer.requestedBy.name %></p>
+                    <p><strong>Fecha de Solicitud:</strong> <%= new Date(transfer.createdAt).toLocaleString('es-CL') %></p>
+                    <p><strong>Estado:</strong> <span class="status status-<%= transfer.status %>"><%= transfer.status %></span></p>
+                    <% if(transfer.confirmedBy) { %>
+                        <p><strong>Confirmado por:</strong> <%= transfer.confirmedBy.name %></p>
+                        <p><strong>Fecha de Confirmación:</strong> <%= new Date(transfer.updatedAt).toLocaleString('es-CL') %></p>
+                    <% } %>
+                    <% if(transfer.notes) { %>
+                        <p><strong>Notas:</strong> <%= transfer.notes %></p>
+                    <% } %>
+                </div>
+
+                <hr>
+                <h3>Ítems Transferidos</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad Solicitada</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% transfer.items.forEach(item => { %>
+                            <tr>
+                                <td><%= item.productName %></td>
+                                <td><%= item.quantity %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+
+                <div class="form-actions">
+                    <a href="/api/inventory/transfers" class="btn btn-secondary">Volver a la Lista</a>
+                    <% if (transfer.status === 'pending' && (user.role === 'cocina' || user.role === 'admin')) { %>
+                        <form action="/api/inventory/transfers/<%= transfer._id %>/confirm" method="POST" style="display: inline;" onsubmit="return confirm('¿Confirma la recepción de todos estos productos y cantidades? Esta acción no se puede deshacer.');">
+                            <button type="submit" class="btn btn-success">Confirmar Recepción</button>
+                        </form>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+    ` }) %>
+</body>
+</html>
