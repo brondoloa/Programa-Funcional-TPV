@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caja - <%= restaurantName %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <%- include('layouts/main', { body: `
+    <div class="cash-register-container">
+        <h1>Gestión de Caja</h1>
+
+        <div id="cashRegisterStatus"></div>
+
+        <!-- Abrir Caja -->
+        <div id="openCashSection" style="display:none;">
+            <div class="card">
+                <h2>Abrir Caja</h2>
+                <form onsubmit="openCash(event)">
+                    <div class="form-group">
+                        <label>Monto Inicial *</label>
+                        <input type="number" id="initialAmount" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Notas</label>
+                        <textarea id="openNotes" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Abrir Caja</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Caja Abierta -->
+        <div id="activeCashSection" style="display:none;">
+            <div class="card">
+                <h2>Caja Activa</h2>
+                <div id="cashInfo"></div>
+                <button class="btn btn-danger btn-block" onclick="showCloseModal()">Cerrar Caja</button>
+            </div>
+        </div>
+
+        <!-- Modal Cerrar Caja -->
+        <div id="closeModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeCloseModal()">&times;</span>
+                <h2>Cerrar Caja</h2>
+                <div id="closeSummary"></div>
+                <form onsubmit="closeCash(event)">
+                    <div class="form-group">
+                        <label>Efectivo Real (Contado) *</label>
+                        <input type="number" id="actualAmount" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Notas</label>
+                        <textarea id="closeNotes" rows="3"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeCloseModal()">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">Cerrar Caja</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    ` }) %>
+
+    <script>
+        let currentCash = null;
+
+        async function loadCashStatus() {
+            try {
+                const response = await fetch('/api/cash-register/current');
+                const data = await response.json();
+
+                if (data.cashRegister) {
+                    currentCash = data.cashRegister;
+                    showActiveCash();
+                } else {
+                    showOpenCash();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function showOpenCash() {
+            document.getElementById('openCashSection').style.display = 'block';
+            document.getElementById('activeCashSection').style.display = 'none';
+        }
+
+        function showActiveCash() {
+            document.getElementById('openCashSection').style.display = 'none';
+            document.getElementById('activeCashSection').style.display = 'block';
+
+            document.getElementById('cashInfo').innerHTML = `
+                <div class="info-grid">
+                    <div><strong>Apertura:</strong> ${formatDate(currentCash.openingDate)}</div>
+                    <div><strong>Fondo Inicial:</strong> ${formatCurrency(currentCash.initialAmount)}</div>
+                    <div><strong>Ventas Efectivo:</strong> ${formatCurrency(currentCash.cashSales)}</div>
+                    <div><strong>Ventas Tarjeta:</strong> ${formatCurrency(currentCash.cardSales)}</div>
+                    <div><strong>Ventas Transferencia:</strong> ${formatCurrency(currentCash.transferSales)}</div>
+                    <div><strong>Total Ventas:</strong> ${formatCurrency(currentCash.totalSales)}</div>
+                    <div><strong>Total Órdenes:</strong> ${currentCash.totalOrders}</div>
+                    <div><strong>Efectivo Esperado:</strong> ${formatCurrency(currentCash.expectedAmount)}</div>
+                </div>
+            `;
+        }
+
+        async function openCash(e) {
+            e.preventDefault();
+            const initialAmount = parseFloat(document.getElementById('initialAmount').value);
+            const notes = document.getElementById('openNotes').value;
+
+            try {
+                const response = await fetch('/api/cash-register/open', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ initialAmount, notes })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showNotification('Caja abierta exitosamente', 'success');
+                    loadCashStatus();
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            } catch (error) {
+                showNotification('Error al abrir caja', 'error');
+            }
+        }
+
+        function showCloseModal() {
+            document.getElementById('closeSummary').innerHTML = `
+                <div class="summary-info">
+                    <p><strong>Efectivo Esperado:</strong> ${formatCurrency(currentCash.expectedAmount)}</p>
+                    <p><strong>Total Ventas:</strong> ${formatCurrency(currentCash.totalSales)}</p>
+                    <p><strong>Total Órdenes:</strong> ${currentCash.totalOrders}</p>
+                </div>
+            `;
+            document.getElementById('closeModal').style.display = 'block';
+        }
+
+        function closeCloseModal() {
+            document.getElementById('closeModal').style.display = 'none';
+        }
+
+        async function closeCash(e) {
+            e.preventDefault();
+            const actualAmount = parseFloat(document.getElementById('actualAmount').value);
+            const notes = document.getElementById('closeNotes').value;
+
+            try {
+                const response = await fetch('/api/cash-register/close', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ actualAmount, notes })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showNotification('Caja cerrada exitosamente', 'success');
+                    closeCloseModal();
+                    loadCashStatus();
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            } catch (error) {
+                showNotification('Error al cerrar caja', 'error');
+            }
+        }
+
+        loadCashStatus();
+    </script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punto de Venta - <%= restaurantName %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <%- include('layouts/main', { body: `
+    <div class="pos-container">
+        <div class="pos-products">
+            <div class="pos-header">
+                <h2>Productos</h2>
+                <input type="text" id="searchProduct" placeholder="Buscar producto..." class="search-input">
+                <div class="category-filter">
+                    <button class="btn-category active" data-category="all">Todos</button>
+                    <button class="btn-category" data-category="food">Comida</button>
+                    <button class="btn-category" data-category="beverage">Bebida</button>
+                    <button class="btn-category" data-category="combo">Combo</button>
+                </div>
+            </div>
+            <div id="productGrid" class="product-grid"></div>
+        </div>
+
+        <div class="pos-cart">
+            <h2>Orden Actual</h2>
+            <div id="cartItems" class="cart-items"></div>
+            
+            <div class="cart-summary">
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span id="subtotal">$0.00</span>
+                </div>
+                <div class="summary-row">
+                    <span>Descuento:</span>
+                    <input type="number" id="discount" value="0" min="0" step="0.01" class="input-discount">
+                </div>
+                <div class="summary-row total-row">
+                    <span>TOTAL:</span>
+                    <span id="total">$0.00</span>
+                </div>
+            </div>
+
+            <div class="payment-methods">
+                <h3>Método de Pago</h3>
+                <div class="payment-buttons">
+                    <button class="btn-payment" data-method="cash">💵 Efectivo</button>
+                    <button class="btn-payment" data-method="card">💳 Tarjeta</button>
+                    <button class="btn-payment" data-method="transfer">📱 Transferencia</button>
+                </div>
+            </div>
+
+            <div class="cart-actions">
+                <button class="btn btn-danger" onclick="clearCart()">Limpiar</button>
+                <button class="btn btn-success btn-lg" onclick="processOrder()">Cobrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para mostrar QR -->
+    <div id="qrModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeQRModal()">&times;</span>
+            <h2>Orden Creada</h2>
+            <div id="qrContent"></div>
+            <button class="btn btn-primary" onclick="printOrder()">Imprimir</button>
+            <button class="btn btn-secondary" onclick="closeQRModal()">Cerrar</button>
+        </div>
+    </div>
+    ` }) %>
+
+    <script src="/js/pos.js"></script>
+</body>
+</html>

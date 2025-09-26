@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contabilidad - <%= restaurantName %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <%- include('layouts/main', { body: `
+    <div class="accounting-container">
+        <h1>📊 Módulo Contable</h1>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('entries')">Asientos Contables</button>
+            <button class="tab-btn" onclick="showTab('income')">Estado de Resultados</button>
+            <button class="tab-btn" onclick="showTab('balance')">Balance General</button>
+            <button class="tab-btn" onclick="showTab('cashflow')">Flujo de Efectivo</button>
+        </div>
+
+        <!-- Asientos Contables -->
+        <div id="entries-tab" class="tab-content active">
+            <div class="filters">
+                <input type="date" id="startDate" class="filter-input">
+                <input type="date" id="endDate" class="filter-input">
+                <button class="btn btn-primary" onclick="loadEntries()">🔍 Filtrar</button>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Número</th>
+                            <th>Fecha</th>
+                            <th>Descripción</th>
+                            <th>Tipo</th>
+                            <th>Débito</th>
+                            <th>Crédito</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="entriesBody">
+                        <tr><td colspan="7" class="text-center">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Estado de Resultados -->
+        <div id="income-tab" class="tab-content">
+            <div class="filters">
+                <input type="date" id="incomeStartDate" class="filter-input">
+                <input type="date" id="incomeEndDate" class="filter-input">
+                <button class="btn btn-primary" onclick="loadIncomeStatement()">📈 Generar</button>
+            </div>
+            <div id="incomeStatement" class="report-content">
+                <p class="text-center text-muted">Seleccione fechas y presione Generar</p>
+            </div>
+        </div>
+
+        <!-- Balance General -->
+        <div id="balance-tab" class="tab-content">
+            <div class="filters">
+                <input type="date" id="balanceDate" class="filter-input">
+                <button class="btn btn-primary" onclick="loadBalanceSheet()">📊 Generar</button>
+            </div>
+            <div id="balanceSheet" class="report-content">
+                <p class="text-center text-muted">Seleccione fecha y presione Generar</p>
+            </div>
+        </div>
+
+        <!-- Flujo de Efectivo -->
+        <div id="cashflow-tab" class="tab-content">
+            <div class="filters">
+                <input type="date" id="cashflowStartDate" class="filter-input">
+                <input type="date" id="cashflowEndDate" class="filter-input">
+                <button class="btn btn-primary" onclick="loadCashFlow()">💰 Generar</button>
+            </div>
+            <div id="cashFlow" class="report-content">
+                <p class="text-center text-muted">Seleccione fechas y presione Generar</p>
+            </div>
+        </div>
+    </div>
+    ` }) %>
+
+    <script src="/js/accounting.js"></script>
+</body>
+</html>

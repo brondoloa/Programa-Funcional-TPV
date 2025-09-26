@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios - <%= restaurantName %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <%- include('layouts/main', { body: `
+    <div class="users-container">
+        <div class="page-header">
+            <h1>Gestión de Usuarios</h1>
+            <button class="btn btn-primary" onclick="openUserModal()">+ Nuevo Usuario</button>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Último Login</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="usersBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeUserModal()">&times;</span>
+            <h2 id="modalTitle">Nuevo Usuario</h2>
+            <form id="userForm" onsubmit="saveUser(event)">
+                <input type="hidden" id="userId">
+                
+                <div class="form-group">
+                    <label>Nombre *</label>
+                    <input type="text" id="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Contraseña *</label>
+                    <input type="password" id="password" minlength="6">
+                    <small>Mínimo 6 caracteres</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Rol *</label>
+                    <select id="role" required>
+                        <option value="">Seleccione...</option>
+                        <option value="admin">Administrador</option>
+                        <option value="cashier">Cajero</option>
+                        <option value="accountant">Contador</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select id="active">
+                        <option value="true">Activo</option>
+                        <option value="false">Inactivo</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeUserModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    ` }) %>
+
+    <script src="/js/users.js"></script>
+</body>
+</html>

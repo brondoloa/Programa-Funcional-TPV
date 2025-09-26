@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validador - <%= restaurantName %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <%- include('layouts/main', { body: `
+    <div class="validator-container">
+        <div class="validator-card">
+            <h1>Validador de Comandas</h1>
+            <p class="subtitle">Ingrese el número de orden o escanee el código QR</p>
+
+            <div class="search-box">
+                <input 
+                    type="text" 
+                    id="orderNumber" 
+                    placeholder="Ingrese número de orden"
+                    class="input-search"
+                    autofocus
+                >
+                <button class="btn btn-primary btn-lg" onclick="validateOrder()">
+                    Validar
+                </button>
+                <button class="btn btn-success btn-lg" onclick="startQRScanner()">
+                    📷 Escanear QR
+                </button>
+            </div>
+
+            <!-- Scanner de QR -->
+            <div id="qr-scanner-container" style="display: none;">
+                <div class="scanner-header">
+                    <h3>Escanear Código QR</h3>
+                    <button class="btn btn-danger" onclick="stopQRScanner()">✕ Cerrar Cámara</button>
+                </div>
+                <div id="qr-video-container">
+                    <video id="qr-video" playsinline></video>
+                    <div class="scanner-frame"></div>
+                </div>
+                <p class="scanner-hint">Coloque el código QR dentro del marco</p>
+            </div>
+
+            <div id="validationResult" class="validation-result"></div>
+        </div>
+
+        <div class="recent-validations">
+            <h3>Últimas Validaciones</h3>
+            <div id="recentList"></div>
+        </div>
+    </div>
+    ` }) %>
+
+    <!-- Librería para escanear QR -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="/js/validator.js"></script>
+</body>
+</html>

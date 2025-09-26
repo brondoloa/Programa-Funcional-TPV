@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes - <%= restaurantName %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <%- include('layouts/main', { body: `
+    <div class="reports-container">
+        <h1>Reportes y Analíticas</h1>
+
+        <div class="report-cards">
+            <div class="report-card">
+                <h3>📊 Ventas por Período</h3>
+                <p>Análisis de ventas por día, semana o mes</p>
+                <button class="btn btn-primary" onclick="showSalesReport()">Ver Reporte</button>
+            </div>
+            <div class="report-card">
+                <h3>📦 Productos Más Vendidos</h3>
+                <p>Top productos por cantidad y valor</p>
+                <button class="btn btn-primary" onclick="showTopProducts()">Ver Reporte</button>
+            </div>
+            <div class="report-card">
+                <h3>💰 Análisis de Rentabilidad</h3>
+                <p>Margen de utilidad por producto</p>
+                <button class="btn btn-primary" onclick="showProfitability()">Ver Reporte</button>
+            </div>
+            <div class="report-card">
+                <h3>📉 Productos con Stock Bajo</h3>
+                <p>Productos que necesitan reabastecimiento</p>
+                <button class="btn btn-primary" onclick="showLowStock()">Ver Reporte</button>
+            </div>
+            <div class="report-card">
+                <h3>🧾 Notas de Crédito</h3>
+                <p>Gestionar devoluciones y anulaciones</p>
+                <button class="btn btn-danger" onclick="showCreditNotes()">Gestionar</button>
+            </div>
+        </div>
+
+        <!-- Área de Reporte -->
+        <div id="reportArea" class="report-area" style="display:none;">
+            <button class="btn btn-secondary" onclick="closeReport()">← Volver</button>
+            <div id="reportContent"></div>
+        </div>
+    </div>
+    ` }) %>
+
+    <script src="/js/reports.js"></script>
+</body>
+</html>

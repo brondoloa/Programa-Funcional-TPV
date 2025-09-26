@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - <%= restaurantName %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <%- include('layouts/main', { body: `
+    <div class="dashboard">
+        <h1>Dashboard</h1>
+        <p class="welcome-text">Bienvenido, ${user.name}</p>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <h3>Ventas Hoy</h3>
+                <p class="stat-value" id="salesToday">$0.00</p>
+            </div>
+            <div class="stat-card">
+                <h3>Órdenes Hoy</h3>
+                <p class="stat-value" id="ordersToday">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Productos Activos</h3>
+                <p class="stat-value" id="activeProducts">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Stock Bajo</h3>
+                <p class="stat-value" id="lowStock">0</p>
+            </div>
+        </div>
+
+        <div class="dashboard-actions">
+            ${user.role === 'admin' || user.role === 'cashier' ? `
+            <a href="/pos" class="btn btn-primary btn-lg">
+                <span>🛒</span> Punto de Venta
+            </a>
+            ` : ''}
+            
+            <a href="/validator" class="btn btn-success btn-lg">
+                <span>✓</span> Validar Comanda
+            </a>
+            
+            ${user.role === 'admin' ? `
+            <a href="/products" class="btn btn-secondary btn-lg">
+                <span>📦</span> Productos
+            </a>
+            <a href="/reports" class="btn btn-info btn-lg">
+                <span>📊</span> Reportes
+            </a>
+            ` : ''}
+        </div>
+
+        ${user.role === 'admin' ? `
+        <div class="recent-section">
+            <h2>Últimas Órdenes</h2>
+            <div id="recentOrders"></div>
+        </div>
+        ` : ''}
+    </div>
+    ` }) %>
+
+    <script>
+        async function loadDashboard() {
+            try {
+                // Cargar estadísticas
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                const ordersResponse = await fetch(`/api/orders?startDate=${today.toISOString()}`);
+                const ordersData = await ordersResponse.json();
+                
+                if (ordersData.success) {
+                    const orders = ordersData.orders.filter(o => o.status !== 'cancelled');
+                    const totalSales = orders.reduce((sum, o) => sum + o.total, 0);
+                    
+                    document.getElementById('salesToday').textContent = formatCurrency(totalSales);
+                    document.getElementById('ordersToday').textContent = orders.length;
+                }
+
+                // Cargar productos
+                const productsResponse = await fetch('/api/products?active=true');
+                const productsData = await productsResponse.json();
+                
+                if (productsData.success) {
+                    document.getElementById('activeProducts').textContent = productsData.products.length;
+                    const lowStock = productsData.products.filter(p => p.stock <= p.minStock).length;
+                    document.getElementById('lowStock').textContent = lowStock;
+                }
+
+                // Cargar últimas órdenes (solo admin)
+                if (<%= user.role === 'admin' %>) {
+                    const recentOrdersDiv = document.getElementById('recentOrders');
+                    if (ordersData.success && ordersData.orders.length > 0) {
+                        const recentHtml = ordersData.orders.slice(0, 5).map(order => `
+                            <div class="order-item">
+                                <span class="order-number">${order.orderNumber}</span>
+                                <span class="order-total">${formatCurrency(order.total)}</span>
+                                <span class="order-status status-${order.status}">${order.status}</span>
+                                <span class="order-time">${formatDate(order.createdAt)}</span>
+                            </div>
+                        `).join('');
+                        recentOrdersDiv.innerHTML = recentHtml;
+                    } else {
+                        recentOrdersDiv.innerHTML = '<p class="text-muted">No hay órdenes recientes</p>';
+                    }
+                }
+            } catch (error) {
+                console.error('Error cargando dashboard:', error);
+            }
+        }
+
+        loadDashboard();
+    </script>
+</body>
+</html>
