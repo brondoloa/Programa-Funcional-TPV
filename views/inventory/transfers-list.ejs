@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transferencias de Inventario - <%= restaurantName %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <%- include('../layouts/main', { body: `
+    <div class="container">
+        <div class="page-header">
+            <h1>Transferencias de Inventario</h1>
+            <a href="/api/inventory/transfers/new" class="btn btn-primary">+ Nueva Transferencia</a>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Desde</th>
+                        <th>Hacia</th>
+                        <th>Fecha Solicitud</th>
+                        <th>Solicitado por</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (transfers && transfers.length > 0) { %>
+                        <% transfers.forEach(transfer => { %>
+                            <tr>
+                                <td><%= transfer.transferId %></td>
+                                <td><%= transfer.fromWarehouse.name %></td>
+                                <td><%= transfer.toWarehouse.name %></td>
+                                <td><%= new Date(transfer.createdAt).toLocaleString('es-CL') %></td>
+                                <td><%= transfer.requestedBy.name %></td>
+                                <td>
+                                    <span class="status status-<%= transfer.status %>">
+                                        <%= transfer.status %>
+                                    </span>
+                                </td>
+                                <td class="actions">
+                                    <a href="/api/inventory/transfers/<%= transfer._id %>" class="btn btn-sm btn-secondary">Ver Detalles</a>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="7" class="text-center">No hay transferencias registradas.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    ` }) %>
+</body>
+</html>

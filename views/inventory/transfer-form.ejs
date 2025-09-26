@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Transferencia - <%= restaurantName %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <%- include('../layouts/main', { body: `
+    <div class="container">
+        <div class="page-header">
+            <h1>Crear Nueva Transferencia</h1>
+        </div>
+
+        <form action="/api/inventory/transfers" method="POST" id="transferForm">
+            <div class="form-grid-col-3">
+                <div class="form-group">
+                    <label for="fromWarehouse">Desde Bodega *</label>
+                    <select id="fromWarehouse" name="fromWarehouse" class="form-control" required>
+                        <% warehouses.forEach(w => { %>
+                            <option value="<%= w._id %>"><%= w.name %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="toWarehouse">Hacia Bodega *</label>
+                    <select id="toWarehouse" name="toWarehouse" class="form-control" required>
+                        <% warehouses.forEach(w => { %>
+                            <option value="<%= w._id %>" <%= (w.name === 'Cocina' ? 'selected' : '') %>><%= w.name %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Notas</label>
+                    <input type="text" id="notes" name="notes" class="form-control">
+                </div>
+            </div>
+
+            <hr>
+            <h3>Productos a Transferir</h3>
+
+            <div class="transfer-item-adder">
+                <div class="form-group">
+                    <label>Producto</label>
+                    <select id="productSelector" class="form-control">
+                        <option value="">Seleccione un producto...</option>
+                        <% products.forEach(p => { %>
+                            <option value="<%= p._id %>" data-name="<%= p.name %>"><%= p.name %> (Código: <%= p.code %>)</option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cantidad</label>
+                    <input type="number" id="quantitySelector" class="form-control" min="1" value="1">
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-success" onclick="addProductToTransfer()">+ Agregar</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transferItemsBody">
+                        <!-- Los productos agregados aparecerán aquí -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="form-actions">
+                <a href="/api/inventory/shifts" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Crear Transferencia</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function addProductToTransfer() {
+            const productSelector = document.getElementById('productSelector');
+            const quantitySelector = document.getElementById('quantitySelector');
+            const selectedOption = productSelector.options[productSelector.selectedIndex];
+
+            if (!selectedOption.value) {
+                alert('Por favor, seleccione un producto.');
+                return;
+            }
+
+            const productId = selectedOption.value;
+            const productName = selectedOption.getAttribute('data-name');
+            const quantity = quantitySelector.value;
+
+            if (!quantity || parseInt(quantity) < 1) {
+                alert('Por favor, ingrese una cantidad válida.');
+                return;
+            }
+
+            // Evitar duplicados
+            if (document.getElementById('item-' + productId)) {
+                alert('Este producto ya ha sido agregado.');
+                return;
+            }
+
+            const tableBody = document.getElementById('transferItemsBody');
+            const row = document.createElement('tr');
+            row.id = 'item-' + productId;
+            row.innerHTML = \`
+                <td>
+                    \${productName}
+                    <input type="hidden" name="items[\${productId}][product]" value="\${productId}">
+                    <input type="hidden" name="items[\${productId}][productName]" value="\${productName}">
+                </td>
+                <td>
+                    \${quantity}
+                    <input type="hidden" name="items[\${productId}][quantity]" value="\${quantity}">
+                </td>
+                <td class="actions">
+                    <button type="button" class="btn btn-sm btn-danger" onclick="removeProduct('\${productId}')">Quitar</button>
+                </td>
+            \`;
+            tableBody.appendChild(row);
+
+            // Reset selectors
+            productSelector.selectedIndex = 0;
+            quantitySelector.value = 1;
+        }
+
+        function removeProduct(productId) {
+            const row = document.getElementById('item-' + productId);
+            if (row) {
+                row.remove();
+            }
+        }
+    </script>
+    ` }) %>
+</body>
+</html>

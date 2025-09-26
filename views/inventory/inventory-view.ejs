@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vista de Inventario - <%= restaurantName %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <%- include('../layouts/main', { body: `
+    <div class="container">
+        <div class="page-header">
+            <h1>Vista General de Inventario</h1>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Producto (Código)</th>
+                        <% warehouses.forEach(warehouse => { %>
+                            <th><%= warehouse.name %></th>
+                        <% }); %>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% products.forEach(product => { %>
+                        <tr>
+                            <td><%= product.name %> (<%= product.code %>)</td>
+                            <% warehouses.forEach(warehouse => { %>
+                                <%
+                                const inventoryItem = product.inventory.find(inv => inv.warehouse.toString() === warehouse._id.toString());
+                                const quantity = inventoryItem ? inventoryItem.quantity : 0;
+                                %>
+                                <td><%= quantity %></td>
+                            <% }); %>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    ` }) %>
+</body>
+</html>
